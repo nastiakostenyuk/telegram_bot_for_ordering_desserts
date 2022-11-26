@@ -41,7 +41,7 @@ class Desserts:
         types = []
         for type in session.query(DessertData.dessert_type).distinct():
             types.append(type.dessert_type)
-        return types
+        return f"Типи десертів: {types}"
 
     @classmethod
     def return_lst_with_desserts(cls):
@@ -81,12 +81,12 @@ class Order:
             self.cost += int(price.price) * value
 
         data = OrderData(name=self.name, first_name=self.second_name, second_name=self.second_name,
-                         telephone_number=self.telephone_number, order=self.return_orders(), cost=self.cost)
+                         telephone_number=self.telephone_number, order=self.__return_orders(), cost=self.cost)
 
         session.add(data)
         session.commit()
 
-    def return_orders(self):
+    def __return_orders(self):
         order_rerp = ''
         for key, value in self.order.items():
             order_rerp += f"{key} - {value}шт.\n"
@@ -94,24 +94,34 @@ class Order:
 
     def __repr__(self):
         return f"Замовлення на {self.name} {self.first_name} {self.second_name}\n" \
-               f"Замовлення складається з:\n{self.return_orders()}"
+               f"Замовлення складається з:\n{self.__return_orders()}"
 
     @staticmethod
     def get_total_cost():
         total = session.query(func.sum(OrderData.cost))
-        return total.scalar()
+        return f"Загальна вартість усіх замовлень: {total.scalar()}грн."
 
 
 if __name__ == '__main__':
 
-    # db_creator()
-    #
-    # dessert_1 = Dessert("Десерт картошка", "тістечко", r"https://rutxt.ru/files/16665/original/602389a6e8.jpg",
-    #                   150, 45, "печиво, згущене молоко, вершкове масло, какао")
-    # dessert_2 = Dessert("Наполеон", "торт", "https://images.unian.net/photos/2020_07/thumb_files/1000_545_1594640431-9859.jpg",
-    #                   200, 60, "мука, яйця, маргарин, сіль, жирне молоко, цукор, вершкове масло, ванілін")
-    # #
-    # Desserts.add_dessert(dessert_1)
-    # Desserts.add_dessert(dessert_2)
+    db_creator()
+
+    dessert_1 = Dessert("Десерт картошка", "тістечко", r"https://rutxt.ru/files/16665/original/602389a6e8.jpg",
+                      150, 45, "печиво, згущене молоко, вершкове масло, какао")
+    dessert_2 = Dessert("Наполеон", "торт", "https://images.unian.net/photos/2020_07/thumb_files/1000_545_1594640431-9859.jpg",
+                      200, 60, "мука, яйця, маргарин, сіль, жирне молоко, цукор, вершкове масло, ванілін")
+    dessert_3 = Dessert("Київський торт", "торт", "https://i.ytimg.com/vi/f8p56xqggsc/maxresdefault.jpg", 245, 65,
+                         "Цукор, масло, горіх фундук, борошно, згущене молоко, яйце, какао, коньяк, ванілін" )
+
+    Desserts.add_dessert(dessert_1)
+    Desserts.add_dessert(dessert_2)
+    Desserts.add_dessert(dessert_3)
     print(Desserts.get_desserts_types())
-    
+    order_1 = Order("Костенюк Анастасія Василівна", "0957861745", {"Наполеон": 2,
+                                                                   "Київський торт": 1})
+    order_2 = Order("Петренко Олег Вікторович", "09354926576", {"Десерт картошка": 3,
+                                                                   "Київський торт": 2,
+                                                                "Наполеон": 1})
+    print(Order.get_total_cost())
+
+
