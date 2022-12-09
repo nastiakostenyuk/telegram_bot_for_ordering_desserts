@@ -103,27 +103,23 @@ class Order:
 
 
 if __name__ == '__main__':
-    pass
-    # db_creator()
-    #
-    # dessert_1 = Dessert("Десерт картошка", "тістечко", r"https://rutxt.ru/files/16665/original/602389a6e8.jpg",
-    #                   150, 45, "печиво, згущене молоко, вершкове масло, какао")
-    # dessert_2 = Dessert("Наполеон", "rfrf", "https://images.unian.net/photos/2020_07/thumb_files/1000_545_1594640431-9859.jpg",
-    #                   200, 60, "мука, яйця, маргарин, сіль, жирне молоко, цукор, вершкове масло, ванілін")
-    # dessert_3 = Dessert("Київський торт", "торт", "https://i.ytimg.com/vi/f8p56xqggsc/maxresdefault.jpg", 245, 65,
-    #                      "Цукор, масло, горіх фундук, борошно, згущене молоко, яйце, какао, коньяк, ванілін" )
-    #
-    # Desserts.add_dessert(dessert_1)
-    # Desserts.add_dessert(dessert_2)
-    # Desserts.add_dessert(dessert_3)
-    # print(Desserts.get_desserts_types())
-    # print(Desserts.search_dessert("dessert_type", "тістечко"))
-    # print(Desserts.remove_dessert("Наполеон"))
-    # order_1 = Order("Костенюк Анастасія Василівна", "0957861745", {"Наполеон": 2,
-    #                                                                "Київський торт": 1})
-    # order_2 = Order("Петренко Олег Вікторович", "09354926576", {"Десерт картошка": 3,
-    #                                                                "Київський торт": 2,
-    #                                                             "Наполеон": 1})
-    # print(Order.get_total_cost())
+    db_creator()
+
+    dessert_1 = Dessert("Десерт картошка", "тістечко", r"https://rutxt.ru/files/16665/original/602389a6e8.jpg",
+                      150, 45, "печиво, згущене молоко, вершкове масло, какао")
+    dessert_2 = Dessert("Наполеон", "торт", "https://images.unian.net/photos/2020_07/thumb_files/1000_545_1594640431-9859.jpg",
+                      200, 60, "мука, яйця, маргарин, сіль, жирне молоко, цукор, вершкове масло, ванілін")
+    dessert_3 = Dessert("Київський торт", "торт", "https://i.ytimg.com/vi/f8p56xqggsc/maxresdefault.jpg", 245, 65,
+                         "Цукор, масло, горіх фундук, борошно, згущене молоко, яйце, какао, коньяк, ванілін" )
+
+    Desserts.add_dessert(dessert_1)
+    Desserts.add_dessert(dessert_2)
+    Desserts.add_dessert(dessert_3)
+    order_1 = Order("Костенюк Анастасія Василівна", "0957861745", {"Наполеон": 2,
+                                                                   "Київський торт": 1})
+    order_2 = Order("Петренко Олег Вікторович", "09354926576", {"Десерт картошка": 3,
+                                                                   "Київський торт": 2,
+                                                                "Наполеон": 1})
+    print(Order.get_total_cost())
 
 

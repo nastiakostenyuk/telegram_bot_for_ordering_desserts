@@ -16,6 +16,6 @@ class DessertData(base):
 
     def __repr__(self):
         return f"Назва виробу: {self.dessert_name},\nтип виробу: {self.dessert_type},\n" \
-               f"ціна виробу: {self.price},\nпосилання на фото: {self.image_url}\n"
+               f"ціна виробу: {self.price} грн."
 
 

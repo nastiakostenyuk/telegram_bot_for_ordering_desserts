@@ -1,3 +1,6 @@
+from aiogram.utils.markdown import hide_link
+from aiogram.types import ReplyKeyboardRemove, ReplyKeyboardMarkup, \
+    KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from bot import dp, bot
 from aiogram import types
 from aiogram.dispatcher.filters import Text
@@ -15,6 +18,11 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, 'Вибирайте категорію десерту',
                            reply_markup=create_types_keyboard())
+
+@dp.callback_query_handler(lambda c: c.data == 'order_dessert')
+async def process_callback_order_button(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, 'Напишіть кількість десерту(наприклад: 1, 2...)')
 
 
 @dp.message_handler(commands=['start'])
@@ -38,5 +46,9 @@ async def send_about(message: types.Message):
 
 @dp.message_handler(lambda message: message.text in Desserts.get_desserts_types())
 async def without_puree(message: types.Message):
-    result = session.query(DessertData).filter(DessertData.dessert_type == "торт").all()
-    await message.answer(*result)
+    result = session.query(DessertData).filter(DessertData.dessert_type ==  message.text).all()
+    for elem in result:
+        inline_btn_order_dessert = InlineKeyboardButton('Замовити десерт', callback_data='elem.')
+        inline_kb2 = InlineKeyboardMarkup().add(inline_btn_order_dessert)
+        await message.answer(text=f'{elem}{hide_link(elem.image_url)}',  parse_mode='HTML',
+                             reply_markup = inline_kb2)
