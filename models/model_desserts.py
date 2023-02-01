@@ -19,6 +19,7 @@ class Dessert(base):
     order = relationship("Order", back_populates='dessert')
 
     def __repr__(self):
-        return f"Назва виробу: {self.dessert_name},\nтип виробу: {self.category.category_name},\n" \
-               f"ціна виробу: {self.price} грн."
+        return f"Десертик: {self.dessert_name},\nкатегорія: {self.category.category_name},\n"\
+               f"ціна: {self.price} грн."\
+               f"Десертик складається з:\n{self.ingredients}"
 

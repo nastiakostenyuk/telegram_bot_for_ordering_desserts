@@ -12,14 +12,36 @@ from models.model_users import User
 from models.database import session
 from states import OrderStates, Quantity
 from main import Order
-from keyboards import inline_kb1,create_types_keyboard, create_inline_keyboard, inline_kb3, remove_keyboard, number_keyboard
+from keyboards import inline_kb1,create_types_keyboard, create_inline_keyboard, inline_kb3, remove_keyboard, number_keyboard, inline_kb4
 from main import get_categories
+
+def total_order(user_id):
+    orders = session.query(Order).filter(Order.user_id == user_id, Order.state == 'in progress').all()
+    order = [f'{elem.dessert.dessert_name}\nКількість: {elem.quantity}\nНа суму: {elem.cost} грн.\n\n' for elem in orders]
+    return ''.join(order)
 
 @dp.callback_query_handler(lambda c: c.data in ['order', 'continue_order'])
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, 'Вибирайте категорію десерту',
                            reply_markup=create_types_keyboard())
+
+@dp.callback_query_handler(lambda c: c.data == 'confirm_order')
+async def process_callback_order_button(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, 'Замовлення прийняте!\nДякуємо!')
+    edit_order = session.query(Order).filter(Order.user_id == callback_query.from_user.id, Order.state == "in progress"). \
+        update({Order.state: "finished"}, synchronize_session=False)
+    session.commit()
+
+@dp.callback_query_handler(lambda c: c.data == 'cancel_order')
+async def process_callback_order_button(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, 'Замовлення скасовано')
+    edit_order = session.query(Order).filter(Order.user_id == callback_query.from_user.id,
+                                             Order.state == "in progress"). \
+        update({Order.state: "canceled"}, synchronize_session=False)
+    session.commit()
 
 @dp.callback_query_handler(lambda c:  'order_dessert' in c.data)
 async def process_callback_order_button(callback_query: types.CallbackQuery):
@@ -35,10 +57,11 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
 
 @dp.message_handler(state=Quantity.quantity_desserts)
 async def quantity_des(message: types.Message, state: FSMContext):
-    # async with state.proxy() as data:
-    #     data[f'quantity'] = int(message.text)
+    dessert = session.query(Order).filter(Order.user_id == message.from_user.id, Order.quantity == None).first()
+
     quant = session.query(Order).filter(Order.user_id == message.from_user.id, Order.quantity == None).\
-            update({Order.quantity: message.text},  synchronize_session = False)
+            update({Order.quantity: message.text,
+                    Order.cost: int(dessert.dessert.price) * int(message.text)},  synchronize_session = False)
     session.commit()
     print('ok')
     await message.reply('Все добре, що далі', reply_markup=inline_kb3)
@@ -77,7 +100,7 @@ async def phone_state(message: types.Message, state: FSMContext):
         await OrderStates.phone.set()
     else:
         await state.finish()
-        await message.answer(f'Ваше замовлення: \n ')
+        await message.answer(f'Ваше замовлення: \n{total_order(message.from_user.id)}', reply_markup=inline_kb4)
 
 
 @dp.message_handler(content_types=types.ContentType.CONTACT, state=OrderStates.phone)
@@ -87,7 +110,7 @@ async def result_order(message: types.Message, state: FSMContext ):
         update({User.telephone_number: phonenumber})
     session.commit()
     await state.finish()
-    await message.answer('Замовлення прийняте')
+    await message.answer(f'Ваше замовлення: \n{total_order(message.from_user.id)}', reply_markup=inline_kb4)
 
 
 @dp.message_handler(commands=['start'])

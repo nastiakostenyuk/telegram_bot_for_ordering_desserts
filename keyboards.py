@@ -13,6 +13,9 @@ inline_kb3 = InlineKeyboardMarkup(row_width=2).add(inline_btn_continue).insert(i
 
 remove_keyboard = ReplyKeyboardRemove()
 
+inline_btn_confirm = InlineKeyboardButton("Підтвердити замовлення", callback_data='confirm_order')
+inline_btn_cancel = InlineKeyboardButton("Скасувати", callback_data='cancel_order')
+inline_kb4 = InlineKeyboardMarkup(row_width=2).add(inline_btn_confirm).insert(inline_btn_cancel)
 
 number_keyboard  = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True, one_time_keyboard=True)
 button_phone = KeyboardButton(text="Поділитись номером телефона", request_contact=True )
