@@ -1,17 +1,27 @@
-from sqlalchemy import Column, String, Integer, Numeric, VARCHAR
+from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey
+from sqlalchemy.orm import relationship
 
+from models.model_users import User
+from models.model_desserts import Dessert
 from models.database import base
+from sqlalchemy import DateTime
 
 
-class OrderData(base):
+STATE = {'in_progress', 'finished', 'canceled'}
+
+
+class Order(base):
     __tablename__ = 'orders'
 
     order_id = Column(Integer, primary_key=True)
-    name = Column(String)
-    first_name = Column(String)
-    second_name = Column(String)
-    telephone_number = Column(String)
-    order = Column(VARCHAR)
-    cost = Column(Numeric)
+    user_id = Column(Integer, ForeignKey('users.user_id'))
+    dessert_id = Column(Integer, ForeignKey('desserts.dessert_id'))
+    quantity = Column(Integer, default = None)
+    cost = Column(Numeric, default = None)
+    state = Column(String)
+    time = Column(String)
+
+    user = relationship("User", back_populates="order")
+    dessert = relationship("Dessert", back_populates="order")
 
 

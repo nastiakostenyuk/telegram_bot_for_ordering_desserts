@@ -15,3 +15,4 @@ session = Session()
 
 def create_db():
     base.metadata.create_all(db)
+
