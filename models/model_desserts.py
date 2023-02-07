@@ -1,6 +1,6 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey
-
+import emoji
 from models.database import base, session
 
 
@@ -19,7 +19,7 @@ class Dessert(base):
     order = relationship("Order", back_populates='dessert')
 
     def __repr__(self):
-        return f"Десертик: {self.dessert_name},\nкатегорія: {self.category.category_name},\n"\
-               f"ціна: {self.price} грн."\
-               f"Десертик складається з:\n{self.ingredients}"
+        return f"{emoji.emojize(':sparkles:')}Десертик: {self.dessert_name},\n{emoji.emojize(':sparkles:')}категорія: {self.category.category_name},\n"\
+               f"{emoji.emojize(':sparkles:')}ціна: {self.price} грн.\n"\
+               f"{emoji.emojize(':sparkles:')}Десертик складається з:\n{self.ingredients}"
 

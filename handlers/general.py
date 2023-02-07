@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.markdown import hide_link
-from time import sleep
+import emoji
 import datetime
 
 from bot import dp, bot
@@ -16,20 +16,24 @@ from keyboards import inline_kb1,create_types_keyboard, create_inline_keyboard, 
 from main import get_categories
 
 def total_order(user_id):
+    sp = emoji.emojize(':sparkles:')
+    money = emoji.emojize(':money_with_wings:')
+    cupcake = emoji.emojize(':cupcake:')
     orders = session.query(Order).filter(Order.user_id == user_id, Order.state == 'in progress').all()
-    order = [f'{elem.dessert.dessert_name}\nКількість: {elem.quantity}\nНа суму: {elem.cost} грн.\n\n' for elem in orders]
+    order = [f"{sp}{elem.dessert.dessert_name}{sp}\nКількість{cupcake}: {elem.quantity}\nНа суму{money}: {elem.cost} грн.\n\n" for elem in orders]
     return ''.join(order)
 
 @dp.callback_query_handler(lambda c: c.data in ['order', 'continue_order'])
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, 'Вибирайте категорію десерту',
+    await bot.send_message(callback_query.from_user.id, f"Вибирайте категорію десерту{emoji.emojize(':shortcake:')}",
                            reply_markup=create_types_keyboard())
 
 @dp.callback_query_handler(lambda c: c.data == 'confirm_order')
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, 'Замовлення прийняте!\nДякуємо!')
+    await bot.send_message(callback_query.from_user.id, f"Замовлення прийняте!"
+                                                        f"\nДякуємо!{emoji.emojize(':cupcake:')}{emoji.emojize(':growing_heart:')}")
     edit_order = session.query(Order).filter(Order.user_id == callback_query.from_user.id, Order.state == "in progress"). \
         update({Order.state: "finished"}, synchronize_session=False)
     session.commit()
@@ -37,7 +41,7 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data == 'cancel_order')
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, 'Замовлення скасовано')
+    await bot.send_message(callback_query.from_user.id, f"Замовлення скасовано {emoji.emojize(':man_gesturing_NO:')}")
     edit_order = session.query(Order).filter(Order.user_id == callback_query.from_user.id,
                                              Order.state == "in progress"). \
         update({Order.state: "canceled"}, synchronize_session=False)
@@ -64,7 +68,8 @@ async def quantity_des(message: types.Message, state: FSMContext):
                     Order.cost: int(dessert.dessert.price) * int(message.text)},  synchronize_session = False)
     session.commit()
     print('ok')
-    await message.reply('Все добре, що далі', reply_markup=inline_kb3)
+    await message.reply(f"Все добре{emoji.emojize(':heart_hands:')}, що далі {emoji.emojize(':white_question_mark:')}",
+                        reply_markup=inline_kb3)
     await state.finish()
 
     # get_users_order = users.orders.filter(state = in progress)
@@ -74,10 +79,10 @@ async def process_callback_end_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     user_data = session.query(User).filter(User.user_id == callback_query.from_user.id).first()
     if user_data.name is None and user_data.second_name is None:
-        await bot.send_message(callback_query.from_user.id, "Введіть ім'я та фамілію замовника")
+        await bot.send_message(callback_query.from_user.id, f"Введіть ім'я та фамілію замовника{emoji.emojize(':sunflower:')}")
         await OrderStates.pib.set()
     else:
-        await bot.send_message(callback_query.from_user.id, 'Тепер напишіть адресу, на яку потрібно доставити замовлення')
+        await bot.send_message(callback_query.from_user.id,f"Тепер напишіть адресу{emoji.emojize(':house_with_garden:')}, на яку потрібно доставити замовлення {emoji.emojize(':white_question_mark:')}")
         await OrderStates.location.set()
 
 
@@ -86,7 +91,7 @@ async def location_state(message: types.Message, state: FSMContext):
     update_user = session.query(User).filter(User.user_id == message.from_user.id).\
         update({User.name: message.text.split()[0], User.second_name: message.text.split()[-1]})
     session.commit()
-    await message.answer('Тепер напишіть адресу, на яку потрібно доставити замовлення')
+    await message.answer(f"Тепер напишіть адресу{emoji.emojize(':house_with_garden:')}, на яку потрібно доставити замовлення {emoji.emojize(':white_question_mark:')}")
     await OrderStates.location.set()
 
 @dp.message_handler(state=OrderStates.location)
@@ -96,7 +101,7 @@ async def phone_state(message: types.Message, state: FSMContext):
     session.commit()
     user_data = session.query(User).filter(User.user_id == message.from_user.id).first()
     if user_data.telephone_number is None:
-        await message.answer('Тепер поділіться номером телефону', reply_markup=number_keyboard)
+        await message.answer(f"Тепер поділіться номером телефону {emoji.emojize(':telephone_receiver:')}", reply_markup=number_keyboard)
         await OrderStates.phone.set()
     else:
         await state.finish()
@@ -115,8 +120,8 @@ async def result_order(message: types.Message, state: FSMContext ):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
-    await message.reply("Привіт! Це кафе-кондитерська Sweeeet dream!\n"
-                        "Очікуємо на твоє замовлення, обирай тістечка та насолоджуйся!",
+    await message.reply(f"Привіт!{emoji.emojize(':waving_hand:')} Це кафе-кондитерська Sweeeet dream!{emoji.emojize(':cupcake:')}\n"
+                        f"Очікуємо на твоє замовлення, обирай тістечка та насолоджуйся!{emoji.emojize(':smiling_face_with_hearts:')}",
                         reply_markup = inline_kb1)
     users_id_lst = [elem.user_id for elem in session.query(User).all()]
 
@@ -128,8 +133,9 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(commands=['about'])
 async def send_about(message: types.Message):
-    await message.reply("За допомогою цього телеграм бота, ти можеш зробити замовлення в кондитерській "
-                        "Пару кнопочок і можеш насолоджуватись улюбленими тістечками не виходячи з дому!")
+    await message.reply(f"За допомогою цього телеграм бота, ти можеш зробити замовлення в кондитерській  {emoji.emojize(':butterfly:')}"
+                        "Пару кнопочок і можеш насолоджуватись улюбленими тістечками не виходячи з дому!"
+                        f"{emoji.emojize(':cupcake:')}{emoji.emojize(':shortcake:')}{emoji.emojize(':doughnut:')}")
 
 
 @dp.message_handler(lambda message: message.text in get_categories())
