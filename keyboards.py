@@ -21,6 +21,10 @@ number_keyboard  = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True, one_ti
 button_phone = KeyboardButton(text="Поділитись номером телефона", request_contact=True )
 number_keyboard.add(button_phone)
 
+
+btn_confirm = InlineKeyboardButton("Готово", callback_data='good_order')
+btn_cancel = InlineKeyboardButton("Скасувати", callback_data='not_good_order')
+inline_kb5 = InlineKeyboardMarkup(row_width=2).add(btn_confirm).insert(btn_cancel)
 def create_inline_keyboard(dessert_name):
     inline_btn_order_dessert = InlineKeyboardButton('Замовити десерт', callback_data=f'order_dessert_{dessert_name}')
     inline_kb2 = InlineKeyboardMarkup().add(inline_btn_order_dessert)

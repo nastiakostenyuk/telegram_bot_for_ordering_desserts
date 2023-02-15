@@ -12,16 +12,35 @@ from models.model_users import User
 from models.database import session
 from states import OrderStates, Quantity
 from main import Order
-from keyboards import inline_kb1,create_types_keyboard, create_inline_keyboard, inline_kb3, remove_keyboard, number_keyboard, inline_kb4
+from keyboards import inline_kb1,create_types_keyboard, create_inline_keyboard, inline_kb3, remove_keyboard, number_keyboard, inline_kb4, inline_kb5
 from main import get_categories
 
 def total_order(user_id):
     sp = emoji.emojize(':sparkles:')
     money = emoji.emojize(':money_with_wings:')
     cupcake = emoji.emojize(':cupcake:')
+    total_amount = 0
     orders = session.query(Order).filter(Order.user_id == user_id, Order.state == 'in progress').all()
-    order = [f"{sp}{elem.dessert.dessert_name}{sp}\nКількість{cupcake}: {elem.quantity}\nНа суму{money}: {elem.cost} грн.\n\n" for elem in orders]
-    return ''.join(order)
+    lst_order = []
+    for elem in orders:
+        order = f"{sp}{elem.dessert.dessert_name}{sp}\nКількість{cupcake}: {elem.quantity}\nНа суму{money}: {elem.cost} грн.\n\n"
+        total_amount += elem.cost
+        lst_order.append(order)
+    lst_order.append(f"Загальна сума замовленя: {total_amount}грн.")
+    return ''.join(lst_order)
+
+def user_order(user_id):
+    orders = session.query(Order).filter(Order.user_id == user_id, Order.state == 'in progress').all()
+    lst_order = [f"Замовник: {orders[0].user.name + ' ' + orders[0].user.second_name}\nНомер телефону: {orders[0].user.telephone_number}\nАдреса: {orders[0].user.address}\n"]
+    total_amount = 0
+    for elem in orders:
+        order = f"Назва {elem.dessert.dessert_name}\n" \
+                f"Кількість: {elem.quantity}\nНа суму: {elem.cost} грн.\n\n"
+        lst_order.append(order)
+        total_amount += elem.cost
+    lst_order.append(f"Загальна сума замовленя: {total_amount}грн.")
+
+    return ''.join(lst_order)
 
 @dp.callback_query_handler(lambda c: c.data in ['order', 'continue_order'])
 async def process_callback_order_button(callback_query: types.CallbackQuery):
@@ -34,6 +53,8 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, f"Замовлення прийняте!"
                                                         f"\nДякуємо!{emoji.emojize(':cupcake:')}{emoji.emojize(':growing_heart:')}")
+    await bot.send_message(chat_id=893972667, text=f'Замовлення: \n\n{user_order(callback_query.from_user.id)}', reply_markup=inline_kb5)
+
     edit_order = session.query(Order).filter(Order.user_id == callback_query.from_user.id, Order.state == "in progress"). \
         update({Order.state: "finished"}, synchronize_session=False)
     session.commit()
@@ -46,6 +67,19 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
                                              Order.state == "in progress"). \
         update({Order.state: "canceled"}, synchronize_session=False)
     session.commit()
+
+@dp.callback_query_handler(lambda c: c.data == 'not_good_order')
+async def process_callback_order_button(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await callback_query.message.delete()
+    await bot.send_message(callback_query.from_user.id, f"Замовлення скасовано")
+
+@dp.callback_query_handler(lambda c: c.data == 'good_order')
+async def process_callback_order_button(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await callback_query.message.delete()
+    await bot.send_message(callback_query.from_user.id, f"Замовлення готове")
+
 
 @dp.callback_query_handler(lambda c:  'order_dessert' in c.data)
 async def process_callback_order_button(callback_query: types.CallbackQuery):
@@ -116,6 +150,7 @@ async def result_order(message: types.Message, state: FSMContext ):
     session.commit()
     await state.finish()
     await message.answer(f'Ваше замовлення: \n{total_order(message.from_user.id)}', reply_markup=inline_kb4)
+
 
 
 @dp.message_handler(commands=['start'])
