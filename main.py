@@ -8,8 +8,9 @@ from models.model_desserts import Dessert
 from models.model_orders import Order
 from models.model_category import Category
 from models.model_users import User
+from models.order_dessert import OrderDessert
 from models.database import session
-from models.database import create_db as db_creator
+from models.database import create_db as db_creator, delete_tables
 #
 
 def get_categories():
@@ -114,6 +115,7 @@ def get_categories():
 #
 
 if __name__ == '__main__':
+    delete_tables()
     db_creator()
     cat = Category(category_id=1, category_name='тістечко')
     cat2 = Category(category_id=2, category_name='торт')
@@ -126,6 +128,7 @@ if __name__ == '__main__':
                         weight_gram=150, price=35, ingredients="печиво, згущене молоко, вершкове масло, какао")
     session.add_all([cat, dessert_1, cat2, dessert_2])
     session.commit()
+
     # try:
     #     query = session.query(Dessert).filter(Dessert.weight_gram == 150 and Dessert.price == 35). \
     #     update({Dessert.weight_gram: 180}, synchronize_session=False)

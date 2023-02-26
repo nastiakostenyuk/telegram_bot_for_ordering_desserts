@@ -16,3 +16,5 @@ session = Session()
 def create_db():
     base.metadata.create_all(db)
 
+def delete_tables():
+    base.metadata.drop_all(db)
