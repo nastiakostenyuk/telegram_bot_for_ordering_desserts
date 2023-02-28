@@ -6,7 +6,7 @@ from config import DATABASE
 
 db_string = DATABASE
 
-db = create_engine(db_string)
+db = create_engine(db_string, pool_pre_ping=True)
 base = declarative_base()
 
 Session = sessionmaker(db)

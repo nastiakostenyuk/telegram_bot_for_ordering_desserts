@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSON
 
 from models.model_users import User
 from models.model_desserts import Dessert
@@ -20,7 +21,7 @@ class Order(base):
     cost = Column(Numeric, default = None)
     state = Column(String, default = None)
     time = Column(String)
-    comment = Column(String, default = None)
+    comment = Column(JSON, default = None)
 
     user = relationship("User", back_populates="order")
     order_dessert = relationship('OrderDessert', back_populates='order')

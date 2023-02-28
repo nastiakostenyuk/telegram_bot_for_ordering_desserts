@@ -8,3 +8,6 @@ class OrderStates(StatesGroup):
     pib = State()
     location = State()
     phone = State()
+
+class Comments(StatesGroup):
+    comment = State()
