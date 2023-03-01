@@ -115,8 +115,8 @@ def get_categories():
 #
 
 if __name__ == '__main__':
-    # delete_tables()
-    # db_creator()
+    delete_tables()
+    db_creator()
     cat = Category(category_id=1, category_name='тістечко')
     cat2 = Category(category_id=2, category_name='торт')
     dessert_1 = Dessert(dessert_name="Наполеон", category_id=2,

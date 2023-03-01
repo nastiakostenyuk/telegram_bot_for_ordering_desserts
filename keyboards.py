@@ -4,10 +4,17 @@ from aiogram.types import ReplyKeyboardRemove, ReplyKeyboardMarkup, \
 
 from main import get_categories
 
-def create_inline_keyboard(dessert_name):
+def create_inline_keyboard_dessert(dessert_name):
     inline_btn_order_dessert = InlineKeyboardButton('Замовити десерт', callback_data=f'order_dessert_{dessert_name}')
     inline_kb2 = InlineKeyboardMarkup().add(inline_btn_order_dessert)
     return inline_kb2
+
+def create_inline_keyboard_order():
+    btn_confirm = InlineKeyboardButton("Готово", callback_data='good_order')
+    btn_cancel = InlineKeyboardButton("Скасувати", callback_data='not_good_order')
+    btn_comment = InlineKeyboardButton("Коментар", callback_data='comment_to_order')
+    inline_admin_confirm = InlineKeyboardMarkup(row_width=2).add(btn_confirm).insert(btn_cancel).insert(btn_comment)
+    return inline_admin_confirm
 
 def create_types_keyboard():
     types_lst = get_categories()
@@ -39,7 +46,4 @@ button_phone = KeyboardButton(text="Поділитись номером теле
 number_keyboard.add(button_phone)
 
 
-btn_confirm = InlineKeyboardButton("Готово", callback_data='good_order')
-btn_cancel = InlineKeyboardButton("Скасувати", callback_data='not_good_order')
-btn_comment = InlineKeyboardButton("Коментар", callback_data='comment_to_order')
-inline_admin_confirm = InlineKeyboardMarkup(row_width=2).add(btn_confirm).insert(btn_cancel, btn_comment)
+

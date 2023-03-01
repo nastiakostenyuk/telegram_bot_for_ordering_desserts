@@ -27,6 +27,7 @@ from models.model_users import User
 from models.model_desserts import Dessert
 from models.model_category import Category
 from models.order_dessert import OrderDessert
+from models.model_comments import Comment
 
 
 target_metadata = base.metadata

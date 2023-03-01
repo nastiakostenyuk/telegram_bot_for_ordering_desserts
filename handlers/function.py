@@ -7,13 +7,18 @@ from main import Order
 
 
 
-def get_order_from_user(user_id):
+def get_checkout_order(user_id):
     order = session.query(Order).filter(Order.user_id == user_id, Order.state == 'checkout').first()
     return order
 
+def get_not_confirmed_order(user_id):
+    order = session.query(Order).filter(Order.user_id == user_id, Order.state == 'not confirmed').first()
+    return order
+
+
 
 def get_order(user_id, whom):
-    order = get_order_from_user(user_id)
+    order = get_checkout_order(user_id)
     desserts = session.query(OrderDessert).filter(OrderDessert.order_id == order.order_id).all()
     lst_order = []
     total_cost = 0
@@ -35,8 +40,11 @@ def get_order(user_id, whom):
     return ''.join(lst_order)
 
 
-def edit_status(status, user_id):
-    order = get_order_from_user(user_id)
+def edit_status(status, user_id, user):
+    if user == 'user':
+        order = get_checkout_order(user_id)
+    else:
+        order = get_not_confirmed_order(user_id)
     desserts = session.query(OrderDessert).filter(OrderDessert.order_id == order.order_id).all()
     lst_desserts = []
     total_cost = 0

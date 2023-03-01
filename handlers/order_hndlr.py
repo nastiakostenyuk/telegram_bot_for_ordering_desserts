@@ -4,8 +4,8 @@ from aiogram.dispatcher import FSMContext
 from bot import dp, bot
 from models.model_users import User
 from states import OrderStates, Quantity
-from keyboards import create_types_keyboard, inline_choice, number_keyboard, inline_order_confirmation, inline_admin_confirm
-from function import *
+from keyboards import create_types_keyboard, inline_choice, number_keyboard, inline_order_confirmation, create_inline_keyboard_order
+from .function import *
 
 
 
@@ -22,7 +22,7 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.from_user.id, 'Напишіть кількість десерту(наприклад: 1, 2...)',
                            reply_markup=types.ReplyKeyboardRemove())
     dessert_id = int(callback_query.data.split('_')[-1])
-    order = get_order_from_user(callback_query.from_user.id)
+    order = get_checkout_order(callback_query.from_user.id)
     order_dessert = OrderDessert(order_id=order.order_id, dessert_id=dessert_id)
     session.add(order_dessert)
     session.commit()
@@ -32,7 +32,7 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
 
 @dp.message_handler(state=Quantity.quantity_desserts)
 async def quantity_des(message: types.Message, state: FSMContext):
-    order = get_order_from_user(message.from_user.id)
+    order = get_checkout_order(message.from_user.id)
     dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity==None).first()
     end_order_dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity==None).\
     update({OrderDessert.quantity: message.text,
@@ -98,12 +98,12 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.from_user.id, f"Замовлення прийняте!"
                                                         f"\nДякуємо!{emoji.emojize(':cupcake:')}{emoji.emojize(':growing_heart:')}")
     await bot.send_message(chat_id=893972667, text=f'Замовлення: \n\n{get_order(callback_query.from_user.id, "manager")}',
-                           reply_markup=inline_admin_confirm)
-    edit_status('not confirmed', callback_query.from_user.id)
+                           reply_markup=create_inline_keyboard_order())
+    edit_status('not confirmed', callback_query.from_user.id, 'user')
 
 
 @dp.callback_query_handler(lambda c: c.data == 'cancel_order')
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, f"Замовлення скасовано {emoji.emojize(':man_gesturing_NO:')}")
-    edit_status('canceled', callback_query.from_user.id)
+    edit_status('user_canceled', callback_query.from_user.id, 'user')

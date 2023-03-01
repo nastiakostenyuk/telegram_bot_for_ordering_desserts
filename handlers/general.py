@@ -6,9 +6,9 @@ from bot import dp
 from models.model_desserts import Dessert
 from models.model_category import Category
 from models.model_users import User
-from keyboards import inline_menu, create_inline_keyboard
+from keyboards import inline_menu, create_inline_keyboard_dessert
 from main import get_categories
-from function import *
+from .function import *
 
 
 
@@ -31,6 +31,7 @@ async def send_welcome(message: types.Message):
     session.commit()
 
 
+
 @dp.message_handler(commands=['about'])
 async def send_about(message: types.Message):
     await message.reply(f"За допомогою цього телеграм бота, ти можеш зробити замовлення в кондитерській  {emoji.emojize(':butterfly:')}"
@@ -44,4 +45,4 @@ async def get_desserts(message: types.Message):
     result = session.query(Dessert).filter(Dessert.category_id == category_id.category_id).all()
     for elem in result:
         await message.answer(text=f'{elem}{hide_link(elem.image_url)}',  parse_mode='HTML',
-                             reply_markup = create_inline_keyboard(elem.dessert_id))
+                             reply_markup = create_inline_keyboard_dessert(elem.dessert_id))
