@@ -8,19 +8,21 @@ from models.model_comments import Comment
 from .function import *
 from keyboards import create_inline_keyboard_order, create_inline_keyboard_delivery
 
+
 @dp.callback_query_handler(lambda c: 'not_good_order' in c.data)
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     user_id = int(callback_query.data.split('_')[-1])
     edit_status("admin_canceled", user_id , 'admin')
-    await bot.send_message(callback_query.from_user.id,"Замовлення скасовано")
+    await callback_query.message.reply("Замовлення скасовано")
+
 
 @dp.callback_query_handler(lambda c: 'good_order' in c.data)
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     user_id = int(callback_query.data.split('_')[-1])
     edit_status("confirm", user_id, 'admin')
-    await bot.send_message(callback_query.from_user.id, "Замовлення підтверджене")
+    await callback_query.message.reply("Замовлення підтверджене")
     await bot.send_message(chat_id=893972667,
                            text=f'Замовлення: \n\n{get_order(user_id, "delivery")}',
                            reply_markup=create_inline_keyboard_delivery(user_id))

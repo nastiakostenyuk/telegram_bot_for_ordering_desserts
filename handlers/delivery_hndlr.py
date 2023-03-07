@@ -13,7 +13,7 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     user_id = int(callback_query.data.split('_')[-1])
     edit_status("delivery_canceled", user_id, 'delivery')
-    await bot.send_message(callback_query.from_user.id,"Замовлення скасовано, написати причину", reply_markup=create_inline_keyboard_comment_yesno(user_id))
+    await callback_query.message.reply("Замовлення скасовано, написати причину", reply_markup=create_inline_keyboard_comment_yesno(user_id))
 
 
 @dp.callback_query_handler(lambda c: 'delivered_order' in c.data)
@@ -21,13 +21,13 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     user_id = int(callback_query.data.split('_')[-1])
     edit_status("delivered", user_id, 'delivery')
-    await bot.send_message(callback_query.from_user.id, "Замовлення доставлене")
+    await callback_query.message.reply("Замовлення доставлене")
 
 
 @dp.callback_query_handler(lambda c: 'no_comment' in c.data)
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, "Статус замовлення змінено")
+    await callback_query.message.reply("Статус замовлення змінено")
 
 
 @dp.callback_query_handler(lambda c: 'yes_comment' in c.data)
