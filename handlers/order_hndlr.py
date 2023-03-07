@@ -22,7 +22,7 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.from_user.id, 'Напишіть кількість десерту(наприклад: 1, 2...)',
                            reply_markup=types.ReplyKeyboardRemove())
     dessert_id = int(callback_query.data.split('_')[-1])
-    order = get_checkout_order(callback_query.from_user.id)
+    order = get_state_order(callback_query.from_user.id, 'checkout')
     order_dessert = OrderDessert(order_id=order.order_id, dessert_id=dessert_id)
     session.add(order_dessert)
     session.commit()
@@ -32,9 +32,9 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
 
 @dp.message_handler(state=Quantity.quantity_desserts)
 async def quantity_des(message: types.Message, state: FSMContext):
-    order = get_checkout_order(message.from_user.id)
-    dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity==None).first()
-    end_order_dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity==None).\
+    order = get_state_order(message.from_user.id, 'checkout')
+    dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity == None).first()
+    end_order_dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity == None).\
     update({OrderDessert.quantity: message.text,
             OrderDessert.cost : int(dessert.dessert.price) * int(message.text)}, synchronize_session = False)
     session.commit()
@@ -96,9 +96,10 @@ async def result_order(message: types.Message, state: FSMContext ):
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, f"Замовлення прийняте!"
-                                                        f"\nДякуємо!{emoji.emojize(':cupcake:')}{emoji.emojize(':growing_heart:')}")
-    await bot.send_message(chat_id=893972667, text=f'Замовлення: \n\n{get_order(callback_query.from_user.id, "manager")}',
-                           reply_markup=create_inline_keyboard_order())
+                                                        f"\nДякуємо!{emoji.emojize(':cupcake:')}{emoji.emojize(':growing_heart:')}\n"
+                                                        f"Очікуйте, на підтвердження!")
+    await bot.send_message(chat_id=893972667, text=f'Замовлення: \n\n{get_order(callback_query.from_user.id, "admin")}',
+                           reply_markup=create_inline_keyboard_order(get_state_order(callback_query.from_user.id, 'checkout').user_id, 'comment'))
     edit_status('not confirmed', callback_query.from_user.id, 'user')
 
 

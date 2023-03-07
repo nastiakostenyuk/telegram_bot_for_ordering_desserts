@@ -9,5 +9,8 @@ class OrderStates(StatesGroup):
     location = State()
     phone = State()
 
-class Comments(StatesGroup):
+class CommentsAdmin(StatesGroup):
+    comment = State()
+
+class CommentsDelivery(StatesGroup):
     comment = State()
