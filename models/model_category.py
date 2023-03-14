@@ -11,7 +11,7 @@ class Category(base):
     category_id = Column(Integer, primary_key=True)
     category_name = Column(String)
 
-    dessert = relationship("Dessert", back_populates='category')
+
 
 
 

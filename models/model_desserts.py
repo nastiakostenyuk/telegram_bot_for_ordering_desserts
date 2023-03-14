@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey
 from sqlalchemy.orm import relationship
 import emoji
+from sqlalchemy.dialects.postgresql import BYTEA
 
 from models.database import base, session
 
@@ -12,12 +13,12 @@ class Dessert(base):
     dessert_id = Column(Integer, primary_key=True)
     dessert_name = Column(String, nullable=False)
     category_id = Column(Integer, ForeignKey("categories.category_id"))
-    image_url = Column(String)
+    image_url = Column(BYTEA)
     weight_gram = Column(Numeric)
     price = Column(Numeric)
     ingredients = Column(VARCHAR)
 
-    category = relationship("Category", back_populates='dessert')
+    categories = relationship("Category")
     order_dessert = relationship("OrderDessert", back_populates='dessert')
 
     def __repr__(self):

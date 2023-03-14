@@ -44,5 +44,6 @@ async def get_desserts(message: types.Message):
     category_id = session.query(Category).filter(Category.category_name == message.text).first()
     result = session.query(Dessert).filter(Dessert.category_id == category_id.category_id).all()
     for elem in result:
-        await message.answer(text=f'{elem}{hide_link(elem.image_url)}',  parse_mode='HTML',
-                             reply_markup = create_inline_keyboard_dessert(elem.dessert_id))
+        await message.answer_photo(elem.image_url, elem, reply_markup = create_inline_keyboard_dessert(elem.dessert_id))
+        # await message.answer(text=f'{elem}{elem.image_url}',  parse_mode='HTML',
+        #                      reply_markup = create_inline_keyboard_dessert(elem.dessert_id))
