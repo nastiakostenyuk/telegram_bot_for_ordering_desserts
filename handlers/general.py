@@ -3,9 +3,7 @@ from aiogram.utils.markdown import hide_link
 from uuid import uuid4
 
 from bot import dp
-from models.model_desserts import Dessert
-from models.model_category import Category
-from models.model_users import User
+from db_utils.models import *
 from keyboards import inline_menu, create_inline_keyboard_dessert
 from main import get_categories
 from .function import *

@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from bot import dp, bot
-from models.model_users import User
+from db_utils.models import User
 from states import OrderStates, Quantity
 from keyboards import create_types_keyboard, inline_choice, number_keyboard, inline_order_confirmation, create_inline_keyboard_order
 from .function import *

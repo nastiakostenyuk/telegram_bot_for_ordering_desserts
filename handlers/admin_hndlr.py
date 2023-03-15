@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 
 from bot import dp, bot
 from states import CommentsAdmin
-from models.model_comments import Comment
+from db_utils.models import Comment
 from .function import *
 from keyboards import create_inline_keyboard_order, create_inline_keyboard_delivery
 

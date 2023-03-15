@@ -1,9 +1,8 @@
 import emoji
 import datetime
 
-from models.order_dessert import OrderDessert
-from models.database import session, db
-from main import Order
+from db_utils.models import OrderDessert, Order
+from db_utils.database import session, db
 
 
 

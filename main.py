@@ -5,13 +5,9 @@ import datetime
 import psycopg2
 from sqlalchemy.exc import SQLAlchemyError
 
-from models.model_desserts import Dessert
-from models.model_orders import Order
-from models.model_category import Category
-from models.model_users import User
-from models.order_dessert import OrderDessert
-from models.database import session
-from models.database import create_db as db_creator, delete_tables
+from db_utils.models import *
+from db_utils.database import session
+from db_utils.database import create_db as db_creator, delete_tables
 #
 
 def get_categories():

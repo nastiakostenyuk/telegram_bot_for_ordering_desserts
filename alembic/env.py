@@ -21,13 +21,13 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from models.database import base
-from models.model_orders import Order
-from models.model_users import User
-from models.model_desserts import Dessert
-from models.model_category import Category
-from models.order_dessert import OrderDessert
-from models.model_comments import Comment
+from db_utils.database import base
+from db_utils.model_orders import Order
+from db_utils.model_users import User
+from db_utils.model_desserts import Dessert
+from db_utils.model_category import Category
+from db_utils.order_dessert import OrderDessert
+from db_utils.model_comments import Comment
 
 
 target_metadata = base.metadata
