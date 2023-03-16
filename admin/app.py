@@ -1,18 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_admin import Admin, form
 from flask_admin.contrib.sqla import ModelView
-
 from flask import url_for, Markup
 import os
 
-
 from db_utils.database import session
 from db_utils.models import *
-from config import PATH_TO_IMAGE
+from config import PASSWORD
 
 
 app = Flask(__name__)
-app.secret_key = 'dghnsoi4356tbn4862bt2'
+app.secret_key = PASSWORD
 
 # set optional bootswatch theme
 app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
