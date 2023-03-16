@@ -7,7 +7,7 @@ from db_utils.models import *
 from keyboards import inline_menu, create_inline_keyboard_dessert
 from main import get_categories
 from .function import *
-
+from config import PATH_TO_IMAGE
 
 
 @dp.message_handler(commands=['start'])
@@ -42,6 +42,12 @@ async def get_desserts(message: types.Message):
     category_id = session.query(Category).filter(Category.category_name == message.text).first()
     result = session.query(Dessert).filter(Dessert.category_id == category_id.category_id).all()
     for elem in result:
-        await message.answer_photo(elem.image_url, elem, reply_markup = create_inline_keyboard_dessert(elem.dessert_id))
-        # await message.answer(text=f'{elem}{elem.image_url}',  parse_mode='HTML',
-        #                      reply_markup = create_inline_keyboard_dessert(elem.dessert_id))
+
+        with open(f"{PATH_TO_IMAGE}{elem.image}", 'rb') as img:
+            await message.answer_photo(img, elem,
+                                       reply_markup=create_inline_keyboard_dessert(elem.dessert_id))
+
+
+
+            # await message.answer(text=f'{elem}{elem.image_url}',  parse_mode='HTML',
+            #                      reply_markup = create_inline_keyboard_dessert(elem.dessert_id))

@@ -15,6 +15,9 @@ class Category(base):
 
     dessert = relationship("Dessert", back_populates='category')
 
+    def __repr__(self):
+        return self.category_name
+
 
 class Dessert(base):
     __tablename__ = 'desserts'
@@ -22,7 +25,7 @@ class Dessert(base):
     dessert_id = Column(Integer, primary_key=True)
     dessert_name = Column(String, nullable=False)
     category_id = Column(Integer, ForeignKey("categories.category_id"))
-    image_url = Column(BYTEA)
+    image = Column(String)
     weight_gram = Column(Numeric)
     price = Column(Numeric)
     ingredients = Column(VARCHAR)
@@ -47,6 +50,9 @@ class User(base):
 
     order = relationship("Order", back_populates='user')
 
+    def __repr__(self):
+        return f"{self.second_name} - {self.name}\n{self.telephone_number}"
+
 
 class Comment(base):
     __tablename__ = 'comments'
@@ -57,6 +63,9 @@ class Comment(base):
     date_time = Column(String)
 
     order = relationship("Order", back_populates='comment')
+
+    def __repr__(self):
+        return f"{self.author} - {self.comment}"
 
 
 class Order(base):
@@ -72,6 +81,9 @@ class Order(base):
     user = relationship("User", back_populates="order")
     order_dessert = relationship('OrderDessert', back_populates='order')
     comment = relationship('Comment', back_populates='order')
+
+    def __repr__(self):
+        return f"{self.user.second_name} - {self.user.telephone_number}\n{self.desserts} - {self.state}"
 
 
 class OrderDessert(base):
