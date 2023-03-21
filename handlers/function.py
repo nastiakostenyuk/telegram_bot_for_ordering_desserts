@@ -61,6 +61,5 @@ def edit_status(status, user_id, user):
     edit_order = session.query(Order).filter(Order.order_id == order.order_id). \
         update({Order.state: status,
                 Order.desserts: lst_desserts,
-                Order.time: datetime.datetime.now().strftime("%H:%M %d/%m/%Y"),
                 Order.cost: total_cost}, synchronize_session=False)
     session.commit()

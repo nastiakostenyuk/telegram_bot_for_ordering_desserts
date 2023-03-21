@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey, ARRAY
-from sqlalchemy.dialects.postgresql import TEXT, BYTEA
+from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 import emoji
 
 
@@ -60,7 +61,7 @@ class Comment(base):
     order_id = Column(String, ForeignKey('orders.order_id'))
     author = Column(String)
     comment = Column(TEXT, default = None)
-    date_time = Column(String)
+    date_time = Column(TIMESTAMP, server_default = func.now())
 
     order = relationship("Order", back_populates='comment')
 
@@ -76,7 +77,7 @@ class Order(base):
     desserts = Column(ARRAY(String), default = None)
     cost = Column(Numeric, default = None)
     state = Column(String, default = None)
-    time = Column(String)
+    date_time = Column(TIMESTAMP, server_default = func.now())
 
     user = relationship("User", back_populates="order")
     order_dessert = relationship('OrderDessert', back_populates='order')

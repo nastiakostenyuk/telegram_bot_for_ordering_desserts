@@ -46,7 +46,7 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
 async def quantity_des(message: types.Message, state: FSMContext):
     add_comment = session.query(Comment).filter(Comment.author == f'delivery_{message.from_user.id}', Comment.comment == None).\
         update({Comment.comment: message.text,
-                Comment.date_time: datetime.datetime.now().strftime("%H:%M %d/%m/%Y")})
+                Comment.date_time: datetime.datetime.now()})
     session.commit()
     await state.finish()
     await message.answer('Коментар записано')

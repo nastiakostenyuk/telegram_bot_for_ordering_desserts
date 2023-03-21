@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.utils.markdown import hide_link
 from uuid import uuid4
+from datetime import datetime
 
 from bot import dp
 from db_utils.models import *
@@ -23,7 +24,7 @@ async def send_welcome(message: types.Message):
         print("add new user")
     unique_id = str(uuid4())
     order = Order(order_id=unique_id, user_id=message.from_user.id,
-                  time=datetime.datetime.now().strftime("%H:%M %d/%m/%Y"),
+                  date_time=datetime.datetime.now(),
                   state='checkout')
     session.add(order)
     session.commit()
