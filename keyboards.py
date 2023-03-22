@@ -62,5 +62,8 @@ number_keyboard  = ReplyKeyboardMarkup(row_width=1, resize_keyboard=True, one_ti
 button_phone = KeyboardButton(text="Поділитись номером телефона", request_contact=True )
 number_keyboard.add(button_phone)
 
+inline_btn_wrong_quantity = InlineKeyboardButton('Спробувати знову', callback_data=f'wrong_quantity')
+inline_kb_wrong = InlineKeyboardMarkup().add(inline_btn_wrong_quantity)
+
 
 

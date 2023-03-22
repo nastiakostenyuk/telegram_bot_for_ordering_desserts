@@ -2,10 +2,11 @@ from aiogram import types
 from aiogram.utils.markdown import hide_link
 from uuid import uuid4
 from datetime import datetime
+import emoji
 
 from bot import dp
 from db_utils.models import *
-from keyboards import inline_menu, create_inline_keyboard_dessert
+from keyboards import inline_menu, create_inline_keyboard_dessert, create_types_keyboard
 from main import get_categories
 from .function import *
 from config import PATH_TO_IMAGE
@@ -37,6 +38,10 @@ async def send_about(message: types.Message):
                         "Пару кнопочок і можеш насолоджуватись улюбленими тістечками не виходячи з дому!"
                         f"{emoji.emojize(':cupcake:')}{emoji.emojize(':shortcake:')}{emoji.emojize(':doughnut:')}")
 
+@dp.message_handler(commands=['menu'])
+async def send_about(message: types.Message):
+    await message.reply(f"Обирай категорію {emoji.emojize(':right_arrow_curving_down:')}",  reply_markup=create_types_keyboard())
+
 
 @dp.message_handler(lambda message: message.text in get_categories())
 async def get_desserts(message: types.Message):
@@ -52,3 +57,7 @@ async def get_desserts(message: types.Message):
 
             # await message.answer(text=f'{elem}{elem.image_url}',  parse_mode='HTML',
             #                      reply_markup = create_inline_keyboard_dessert(elem.dessert_id))
+
+@dp.message_handler()
+async def send_about(message: types.Message):
+    await message.reply(f"Не розумію цього {emoji.emojize('😔')} \nДля того щоб переглянути меню та зробити замовлення є команда - /menu")

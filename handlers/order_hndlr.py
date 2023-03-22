@@ -1,10 +1,13 @@
+from uuid import uuid4
+
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from bot import dp, bot
 from db_utils.models import User
 from states import OrderStates, Quantity
-from keyboards import create_types_keyboard, inline_choice, number_keyboard, inline_order_confirmation, create_inline_keyboard_order
+from keyboards import create_types_keyboard, inline_choice, number_keyboard, inline_order_confirmation, \
+    create_inline_keyboard_order, inline_kb_wrong
 from .function import *
 
 
@@ -16,6 +19,7 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
                            reply_markup=create_types_keyboard())
 
 
+
 @dp.callback_query_handler(lambda c:  'order_dessert' in c.data)
 async def process_callback_order_button(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
@@ -23,6 +27,14 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
                            reply_markup=types.ReplyKeyboardRemove())
     dessert_id = int(callback_query.data.split('_')[-1])
     order = get_state_order(callback_query.from_user.id, 'checkout')
+    if order is None:
+        unique_id = str(uuid4())
+        order = Order(order_id=unique_id, user_id=callback_query.from_user.id,
+                      date_time=datetime.datetime.now(),
+                      state='checkout')
+        session.add(order)
+        session.commit()
+
     order_dessert = OrderDessert(order_id=order.order_id, dessert_id=dessert_id)
     session.add(order_dessert)
     session.commit()
@@ -30,18 +42,33 @@ async def process_callback_order_button(callback_query: types.CallbackQuery):
     await Quantity.quantity_desserts.set()
 
 
+@dp.callback_query_handler(lambda c: c.data == 'wrong_quantity')
+async def process_callback_wrong_quantity(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(callback_query.from_user.id, 'Напишіть нову кількість десерту(наприклад: 1, 2...)',
+                           reply_markup=types.ReplyKeyboardRemove())
+    await Quantity.quantity_desserts.set()
+
+
+
 @dp.message_handler(state=Quantity.quantity_desserts)
 async def quantity_des(message: types.Message, state: FSMContext):
-    order = get_state_order(message.from_user.id, 'checkout')
-    dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity == None).first()
-    end_order_dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity == None).\
-    update({OrderDessert.quantity: message.text,
-            OrderDessert.cost : int(dessert.dessert.price) * int(message.text)}, synchronize_session = False)
-    session.commit()
+    try:
+        int(message.text)
+    except ValueError:
+        await message.reply(f"Щось пішло не так, не розумію цю кількість - {message.text}", reply_markup=inline_kb_wrong)
+        await state.finish()
+    else:
+        order = get_state_order(message.from_user.id, 'checkout')
+        dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity == None).first()
+        end_order_dessert = session.query(OrderDessert).filter(OrderDessert.order_id==order.order_id, OrderDessert.quantity == None).\
+        update({OrderDessert.quantity: message.text,
+                OrderDessert.cost : int(dessert.dessert.price) * int(message.text)}, synchronize_session = False)
+        session.commit()
 
-    await message.reply(f"Все добре{emoji.emojize(':heart_hands:')}, що далі {emoji.emojize(':white_question_mark:')}",
-                        reply_markup=inline_choice)
-    await state.finish()
+        await message.reply(f"Все добре{emoji.emojize(':heart_hands:')}, що далі {emoji.emojize(':white_question_mark:')}",
+                            reply_markup=inline_choice)
+        await state.finish()
 
 
 @dp.callback_query_handler(lambda c: c.data == 'end_order')
