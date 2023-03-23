@@ -96,3 +96,13 @@ class OrderDessert(base):
 
     order = relationship("Order", back_populates='order_dessert')
     dessert = relationship("Dessert", back_populates='order_dessert')
+
+
+class AdminUser(base):
+    __tablename__ = 'admin_user'
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
+    password = Column(String, unique=True)
+
+    def __repr__(self):
+        return self.loging
