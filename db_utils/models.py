@@ -1,9 +1,9 @@
 from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey, ARRAY
-from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP
+from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, BYTEA
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import emoji
-
 
 from db_utils.database import base, session
 
@@ -98,11 +98,16 @@ class OrderDessert(base):
     dessert = relationship("Dessert", back_populates='order_dessert')
 
 
+
 class AdminUser(base):
     __tablename__ = 'admin_user'
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True)
-    password = Column(String, unique=True)
+    first_name = Column(String, unique=True)
+    second_name = Column(String, unique=True)
+    role = Column(String, default='user')
+    password = Column(BYTEA, unique=True)
+
 
     def __repr__(self):
-        return self.loging
+        return self.username

@@ -1,0 +1,18 @@
+{% extends 'admin/master.html' %}
+{% block head_css %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='css/index_style.css') }}" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;1,700&display=swap"
+      rel="stylesheet"
+    />
+{% endblock head_css %}
+
+{% block body %}
+{{ super() }}
+    <div class="welcome-user">
+        <h1 class="welcome">Раді вітати!</h1>
+        <h2>{{ username }}</h2>
+
+    </div>
+{% endblock body %}
