@@ -1,5 +1,7 @@
-from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey, ARRAY
+from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey, ARRAY, Boolean
 from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, BYTEA
+from sqlalchemy import Table
+from flask_security import UserMixin, RoleMixin
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -99,15 +101,45 @@ class OrderDessert(base):
 
 
 
-class AdminUser(base):
+# class AdminUser(base):
+#     __tablename__ = 'admin_user'
+#     id = Column(Integer, primary_key=True)
+#     username = Column(String, unique=True)
+#     first_name = Column(String, unique=True)
+#     second_name = Column(String, unique=True)
+#     role = Column(String, default='user')
+#     password = Column(BYTEA, unique=True)
+#
+#
+#     def __repr__(self):
+#         return self.username
+
+roles_users = Table(
+    'roles_users',
+    base.metadata,
+    Column('user_id', ForeignKey('admin_user.id')),
+    Column('role_id', ForeignKey('role.id'))
+)
+
+
+class Role(base, RoleMixin):
+    __tablename__ = 'role'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    def __str__(self):
+        return self.name
+
+
+class AdminUser(base, UserMixin):
     __tablename__ = 'admin_user'
     id = Column(Integer, primary_key=True)
+    first_name = Column(String)
+    last_name = Column(String)
     username = Column(String, unique=True)
-    first_name = Column(String, unique=True)
-    second_name = Column(String, unique=True)
-    role = Column(String, default='user')
-    password = Column(BYTEA, unique=True)
+    password = Column(BYTEA)
+    active = Column(Boolean)
+    roles = relationship('Role', secondary=roles_users,
+                            backref = 'admin_users', lazy='dynamic')
+    def __str__(self):
+        return self.email
 
-
-    def __repr__(self):
-        return self.username

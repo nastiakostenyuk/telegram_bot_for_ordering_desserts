@@ -2,11 +2,14 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from flask import session as flask_session
 from flask_admin import Admin, form, AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
+from flask_security import Security, SQLAlchemySessionUserDatastore, \
+    UserMixin, RoleMixin, login_required, current_user
 from flask import url_for, Markup
 import os
 import bcrypt
 
-from db_utils.database import session
+from db_utils.database import session, db, base
+from db_utils.database import session as sss
 from db_utils.models import *
 from config import PASSWORD
 
@@ -16,7 +19,10 @@ app.secret_key = PASSWORD
 
 # set optional bootswatch theme
 app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+app.config['SECURITY_LOGIN_USER_TEMPLATE'] = 'security/login_user.html'
 
+user_datastore = SQLAlchemySessionUserDatastore(sss, AdminUser, Role)
+app.security = Security(app, user_datastore)
 
 class MyHomeView(AdminIndexView):
     @expose('/')
@@ -32,11 +38,12 @@ def name_gen_image(model, file_data):
     return hash_name
 
 class SecureModelView(ModelView):
-    def is_accessible(self):
-        if "logged_in" in flask_session:
-            return True
-        else:
-            return redirect("/login")
+    pass
+    # def is_accessible(self):
+    #     if current_user.is_authenticated:
+    #         return True
+    #     else:
+    #         return redirect("/login")
 
 
 
@@ -47,8 +54,8 @@ def create_superuser(user_id) ->None:
     session.commit()
 
 class AdminUserView(SecureModelView):
-
-    column_list = ("username", "first_name", "second_name", "role")
+    column_hide_backrefs = False
+    column_list = ("username", "first_name", "last_name", 'roles')
     can_create = False
     can_edit = False
 
@@ -83,19 +90,21 @@ admin.add_view(SecureModelView(Order, session))
 admin.add_view(DessertView(Dessert, session))
 admin.add_view(SecureModelView(OrderDessert, session))
 admin.add_view(AdminUserView(AdminUser, session))
+admin.add_view(SecureModelView(Role, session))
 
-
-@app.route("/login", methods=["GET", "POST"])
+@login_required
+@app.route("/login")
 def login():
-    if request.method == "POST":
-        user = session.query(AdminUser).filter(AdminUser.username == request.form.get("username")).first()
-        if user:
-            if bcrypt.checkpw(request.form.get("password").encode('utf-8'), user.password):
-                flask_session['logged_in'] = True
+    # if request.method == "POST":
+    #     if current_user.is_authenticated:
+        # user = session.query(AdminUser).filter(AdminUser.username == request.form.get("username")).first()
+        # if user:
+        #     if bcrypt.checkpw(request.form.get("password").encode('utf-8'), user.password):
+        #         flask_session['logged_in'] = True
                 return redirect("/admin")
-            else:
-                return render_template('login.html', failed=True)
-    return render_template('login.html')
+    #     else:
+    #         return render_template('security/login_user.html', failed=True)
+    # return render_template('security/login_user.html')
 
 
 @app.route("/signup", methods=["GET", "POST"])
@@ -107,10 +116,20 @@ def signup():
         password = request.form.get('password')
         if all([first_name, second_name, username, password]):
             hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            new_user = AdminUser(username=username, first_name=first_name, second_name=second_name, password=hashed)
-            session.add(new_user)
+            # role = session.query(Role).filter(Role.name == 'admin').first()
+            # user = User(first_name = first_name_f,
+            #             last_name = second_name_f,
+            #             username = username_f,
+            #             password = hashed,
+            #             roles = role)
+            # session.add(user)
+            # session.commit()
+            # user_datastore.create_role(name='admin')
+            user_datastore.create_user(first_name = first_name, last_name = second_name,
+                                       username=username, password=hashed,
+                                       roles=['admin'], active=True)
             session.commit()
-            redirect("/login")
+            return redirect("/login")
     return render_template('signup.html')
 
 
@@ -122,4 +141,6 @@ def logout():
 
 
 if __name__ == '__main__':
+    # user_datastore.create_role(name='admin')
+    # session.commit()
     app.run(debug=True)
