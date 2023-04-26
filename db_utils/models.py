@@ -1,8 +1,6 @@
 from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey, ARRAY, Boolean
 from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, BYTEA
 from sqlalchemy import Table
-from flask_security import UserMixin, RoleMixin
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import emoji
@@ -122,24 +120,43 @@ roles_users = Table(
 )
 
 
-class Role(base, RoleMixin):
+class Role(base):
     __tablename__ = 'role'
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
+    description = Column(String)
     def __str__(self):
         return self.name
 
 
-class AdminUser(base, UserMixin):
+class AdminUser(base):
     __tablename__ = 'admin_user'
     id = Column(Integer, primary_key=True)
-    first_name = Column(String)
-    last_name = Column(String)
-    username = Column(String, unique=True)
-    password = Column(BYTEA)
-    active = Column(Boolean)
+    login = Column(String, unique=True)
+    email = Column(String, unique=True)
+    password = Column(String)
+    is_active = Column(Boolean)
     roles = relationship('Role', secondary=roles_users,
                             backref = 'admin_users', lazy='dynamic')
     def __str__(self):
         return self.email
+
+    @property
+    def is_authenticated(self):
+        return True
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+    # Required for administrative interface
+    def __unicode__(self):
+        return self.username
 

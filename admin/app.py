@@ -2,14 +2,18 @@ from flask import Flask, render_template, request, redirect, url_for, flash, abo
 from flask import session as flask_session
 from flask_admin import Admin, form, AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
-from flask_security import Security, SQLAlchemySessionUserDatastore, \
-    UserMixin, RoleMixin, login_required, current_user
-from flask import url_for, Markup
-import os
-import bcrypt
+from wtforms import form, fields, validators
+import flask_login as login
+from flask_admin import helpers, expose
+from werkzeug.security import generate_password_hash, check_password_hash
 
+
+import bcrypt
+from flask_security import Security, SQLAlchemySessionUserDatastore
+from flask_admin.contrib.sqla import ModelView
+from flask_security import current_user, login_required
 from db_utils.database import session, db, base
-from db_utils.database import session as sss
+
 from db_utils.models import *
 from config import PASSWORD
 
@@ -17,130 +21,158 @@ from config import PASSWORD
 app = Flask(__name__)
 app.secret_key = PASSWORD
 
-# set optional bootswatch theme
-app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
-app.config['SECURITY_LOGIN_USER_TEMPLATE'] = 'security/login_user.html'
+user_datastore = SQLAlchemySessionUserDatastore(session, AdminUser, Role)
+security = Security(app, user_datastore)
 
-user_datastore = SQLAlchemySessionUserDatastore(sss, AdminUser, Role)
-app.security = Security(app, user_datastore)
+class LoginForm(form.Form):
+    login = fields.StringField(validators=[validators.InputRequired()])
+    password = fields.PasswordField(validators=[validators.InputRequired()])
+
+    def validate_login(self, field):
+        user = self.get_user()
+
+        if user is None:
+            raise validators.ValidationError('Invalid user')
+
+        # we're comparing the plaintext pw with the the hash from the db
+        if not check_password_hash(user.password, self.password.data):
+        # to compare plain text passwords use
+        # if user.password != self.password.data:
+            raise validators.ValidationError('Invalid password')
+
+    def get_user(self):
+        return session.query(AdminUser).filter_by(login=self.login.data).first()
+
+
+class RegistrationForm(form.Form):
+    login = fields.StringField(validators=[validators.InputRequired()])
+    email = fields.StringField()
+    password = fields.PasswordField(validators=[validators.InputRequired()])
+
+    def validate_login(self, field):
+        if session.query(AdminUser).filter_by(login=self.login.data).count() > 0:
+            raise validators.ValidationError('Duplicate username')
+
+def init_login():
+    login_manager = login.LoginManager()
+    login_manager.init_app(app)
+
+    # Create user loader function
+    @login_manager.user_loader
+    def load_user(user_id):
+        return session.query(AdminUser).get(user_id)
+
+class SecureModelView(ModelView):
+    # pass
+    def is_accessible(self):
+        return login.current_user.is_authenticated
 
 class MyHomeView(AdminIndexView):
     @expose('/')
     def index(self):
-        adm_user = session.query(AdminUser).first()
-        return self.render('admin/index.html', username=adm_user.username)
+        # return self.render('admin/index.html', username='admin')
+        if not login.current_user.is_authenticated:
+            return redirect(url_for('.login_view'))
+        return super(MyHomeView, self).index()
 
+    @expose('/login/', methods=('GET', 'POST'))
+    def login_view(self):
+        # handle user login
+        form = LoginForm(request.form)
+        if helpers.validate_form_on_submit(form):
+            user = form.get_user()
+            login.login_user(user)
 
-admin = Admin(app, name='Sweeet Dream', index_view=MyHomeView(),  template_mode='bootstrap3', endpoint='admin')
+        if login.current_user.is_authenticated:
+            return redirect(url_for('.index'))
+        link = '<p>Don\'t have an account? <a href="' + url_for('.register_view') + '">Click here to register.</a></p>'
+        self._template_args['form'] = form
+        self._template_args['link'] = link
+        return super(MyHomeView, self).index()
+
+    @expose('/register/', methods=('GET', 'POST'))
+    def register_view(self):
+        form = RegistrationForm(request.form)
+        if helpers.validate_form_on_submit(form):
+            user = AdminUser()
+
+            form.populate_obj(user)
+            # we hash the users password to avoid saving it as plaintext in the db,
+            # remove to use plain text:
+            user.password = generate_password_hash(form.password.data)
+
+            session.add(user)
+            session.commit()
+
+            login.login_user(user)
+            return redirect(url_for('.index'))
+        link = '<p>Already have an account? <a href="' + url_for('.login_view') + '">Click here to log in.</a></p>'
+        self._template_args['form'] = form
+        self._template_args['link'] = link
+        return super(MyHomeView, self).index()
+
+    @expose('/logout/')
+    def logout_view(self):
+        login.logout_user()
+        return redirect(url_for('.index'))
+
+init_login()
+
+admin = Admin(app, name='Sweeet Dream', index_view=MyHomeView(),  template_mode='bootstrap4', endpoint='admin')
 
 def name_gen_image(model, file_data):
     hash_name =  f"{model.dessert_name}"
     return hash_name
 
-class SecureModelView(ModelView):
-    pass
-    # def is_accessible(self):
-    #     if current_user.is_authenticated:
-    #         return True
-    #     else:
-    #         return redirect("/login")
 
 
-
-def create_superuser(user_id) ->None:
-    adm_user = session.query(AdminUser).filter(AdminUser.id == user_id).update(
-        {AdminUser.role: 'super_user'}
-    )
-    session.commit()
+# def create_superuser(user_id) ->None:
+#     adm_user = session.query(AdminUser).filter(AdminUser.id == user_id).update(
+#         {AdminUser.role: 'super_user'}
+#     )
+#     session.commit()
 
 class AdminUserView(SecureModelView):
     column_hide_backrefs = False
-    column_list = ("username", "first_name", "last_name", 'roles')
     can_create = False
     can_edit = False
 
 
-class DessertView(SecureModelView):
-    def _list_thumbnail(view, context, model, name):
-        if not model.image:
-            return ''
-
-        return Markup(
-            f'<img src={url_for("static", filename=os.path.join("dessert_image/", model.image))} width="100">'
-        )
-
-    # url = url_for('static', filename=os.path.join('dessert_image/', model.dessert_image))
-    # if model.dessert_image.split('.')[-1] in ['jpg', 'jpeg', 'png', 'svg']:
-    #     return Markup(f'<img scr={url} width="100">')
-
-    column_formatters = {
-        'dessert_image': _list_thumbnail
-    }
-
-    form_extra_fields = {
-        'dessert_image': form.ImageUploadField(
-            'Image', base_path='static/dessert_image/',
-            namegen=name_gen_image)
-    }
+# class DessertView(SecureModelView):
+#     def _list_thumbnail(view, context, model, name):
+#         if not model.image:
+#             return ''
+#
+#         return Markup(
+#             f'<img src={url_for("static", filename=os.path.join("dessert_image/", model.image))} width="100">'
+#         )
+#
+#     # url = url_for('static', filename=os.path.join('dessert_image/', model.dessert_image))
+#     # if model.dessert_image.split('.')[-1] in ['jpg', 'jpeg', 'png', 'svg']:
+#     #     return Markup(f'<img scr={url} width="100">')
+#
+#     column_formatters = {
+#         'dessert_image': _list_thumbnail
+#     }
+#
+#     form_extra_fields = {
+#         'dessert_image': form.ImageUploadField(
+#             'Image', base_path='static/dessert_image/',
+#             namegen=name_gen_image)
+#     }
 
 admin.add_view(SecureModelView(User, session))
 admin.add_view(SecureModelView(Category, session))
 admin.add_view(SecureModelView(Comment, session))
 admin.add_view(SecureModelView(Order, session))
-admin.add_view(DessertView(Dessert, session))
+admin.add_view(SecureModelView(Dessert, session))
 admin.add_view(SecureModelView(OrderDessert, session))
 admin.add_view(AdminUserView(AdminUser, session))
 admin.add_view(SecureModelView(Role, session))
 
-@login_required
-@app.route("/login")
-def login():
-    # if request.method == "POST":
-    #     if current_user.is_authenticated:
-        # user = session.query(AdminUser).filter(AdminUser.username == request.form.get("username")).first()
-        # if user:
-        #     if bcrypt.checkpw(request.form.get("password").encode('utf-8'), user.password):
-        #         flask_session['logged_in'] = True
-                return redirect("/admin")
-    #     else:
-    #         return render_template('security/login_user.html', failed=True)
-    # return render_template('security/login_user.html')
-
-
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        first_name = request.form.get("first_name")
-        second_name = request.form.get("second_name")
-        username = request.form.get("username")
-        password = request.form.get('password')
-        if all([first_name, second_name, username, password]):
-            hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            # role = session.query(Role).filter(Role.name == 'admin').first()
-            # user = User(first_name = first_name_f,
-            #             last_name = second_name_f,
-            #             username = username_f,
-            #             password = hashed,
-            #             roles = role)
-            # session.add(user)
-            # session.commit()
-            # user_datastore.create_role(name='admin')
-            user_datastore.create_user(first_name = first_name, last_name = second_name,
-                                       username=username, password=hashed,
-                                       roles=['admin'], active=True)
-            session.commit()
-            return redirect("/login")
-    return render_template('signup.html')
-
-
-@app.route("/logout")
-def logout():
-    flask_session.clear()
-    return redirect("/")
-
 
 
 if __name__ == '__main__':
-    # user_datastore.create_role(name='admin')
+    # user_datastore.create_user(email='nastia_admin@gmail.com', password="admin")
     # session.commit()
     app.run(debug=True)

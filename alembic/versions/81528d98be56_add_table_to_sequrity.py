@@ -53,7 +53,8 @@ def downgrade() -> None:
     op.alter_column('admin_user', 'password',
                existing_type=sa.String(length=255),
                type_=postgresql.BYTEA(),
-               existing_nullable=True)
+               existing_nullable=True,
+               postgresql_using='password::bytea')
     op.drop_column('admin_user', 'last_name')
     op.drop_table('roles_users')
     op.drop_table('role')
