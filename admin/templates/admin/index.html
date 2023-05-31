@@ -15,4 +15,13 @@
         <h2>{{ username }}</h2>
 
     </div>
+     <div class="image-container">
+        <img src="{{ url_for('static', filename='img/background.jpg') }}" alt="Image">
+    </div>
+
+    <div class="logout-button">
+        <a href="/signup" class="btn btn-secondary">Додати нового користувача</a>
+        <a href="/logout" class="btn btn-light">Вийти з акаунту</a>
+    </div>
 {% endblock body %}
+

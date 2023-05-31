@@ -16,26 +16,26 @@ def get_categories():
 
 
 if __name__ == '__main__':
-    delete_tables()
+    # delete_tables()
     db_creator()
-    image1 = open('dessert_image/картошка', 'rb').read()
-
-    cat = Category(category_id=1, category_name='тістечко')
-    cat2 = Category(category_id=2, category_name='торт')
-    # with open('dessert_image/maxresdefault.jpg', 'rb') as fl:
-    #     bts = fl.read()
-    #     dessert_1 = Dessert(dessert_name="Наполеон", category_id=2,
-    #                         image_url=bts,
-    #                         weight_gram=200, price=60, ingredients="мука, яйця, маргарин, сіль, жирне молоко, цукор, вершкове масло, ванілін")
+    # image1 = open('dessert_image/картошка', 'rb').read()
     #
-    # with open('dessert_image/картошка', 'rb') as fl:
-    #     bts = fl.read()
-    #     dessert_2 = Dessert(dessert_name="Десерт картошка", category_id=1,
-    #                         image_url=bts,
-    #                         weight_gram=150, price=35, ingredients="печиво, згущене молоко, вершкове масло, какао")
-    session.add_all([cat, cat2])
-    # session.add(dessert_2)
-    session.commit()
+    # cat = Category(category_id=1, category_name='тістечко')
+    # cat2 = Category(category_id=2, category_name='торт')
+    # # with open('dessert_image/maxresdefault.jpg', 'rb') as fl:
+    # #     bts = fl.read()
+    # #     dessert_1 = Dessert(dessert_name="Наполеон", category_id=2,
+    # #                         image_url=bts,
+    # #                         weight_gram=200, price=60, ingredients="мука, яйця, маргарин, сіль, жирне молоко, цукор, вершкове масло, ванілін")
+    # #
+    # # with open('dessert_image/картошка', 'rb') as fl:
+    # #     bts = fl.read()
+    # #     dessert_2 = Dessert(dessert_name="Десерт картошка", category_id=1,
+    # #                         image_url=bts,
+    # #                         weight_gram=150, price=35, ingredients="печиво, згущене молоко, вершкове масло, какао")
+    # session.add_all([cat, cat2])
+    # # session.add(dessert_2)
+    # session.commit()
     # with open('dessert_image/maxresdefault.jpg', 'rb') as fl:
     #     bts = fl.read()
     #     edit_desert_image = session.query(Dessert).filter(
