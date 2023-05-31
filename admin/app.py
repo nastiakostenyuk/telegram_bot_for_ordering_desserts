@@ -72,6 +72,7 @@ admin.add_view(SecureModelView(Order, db_session))
 admin.add_view(DessertView(Dessert, db_session))
 admin.add_view(SecureModelView(OrderDessert, db_session))
 admin.add_view(SecureModelView(AdminUser, db_session))
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -100,6 +101,7 @@ def signup():
             return redirect("/login")
 
     return render_template('security/signup.html')
+
 @app.route("/logout")
 def logout():
     flask_session.clear()
@@ -108,7 +110,6 @@ def logout():
 @app.route('/')
 def index():
     return '<a href="/login">Click me to get to Admin!</a>'
-
 
 if __name__ == '__main__':
     db_session.commit()
