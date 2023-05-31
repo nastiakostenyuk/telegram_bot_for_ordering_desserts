@@ -24,7 +24,7 @@ if config.config_file_name is not None:
 
 
 from db_utils.database import base
-from db_utils.models import Category, Dessert, OrderDessert, User, Comment, Order, AdminUser, Role, roles_users
+from db_utils.models import Category, Dessert, OrderDessert, User, Comment, Order
 
 target_metadata = base.metadata
 

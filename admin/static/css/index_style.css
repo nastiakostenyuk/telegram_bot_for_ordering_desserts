@@ -4,7 +4,6 @@
 
 }
 
-
 .welcome{
     font-style: normal;
     font-weight: 400;
@@ -17,4 +16,34 @@
     color: #000000;
 
     text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 500px;
+    height: 800px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.image-container img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.logout-button {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.logout-button .btn {
+    background-color: lightgray;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: black;
+    margin-left: 10px;
 }

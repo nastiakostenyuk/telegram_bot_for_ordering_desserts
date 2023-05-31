@@ -1,11 +1,11 @@
 from sqlalchemy import Column, String, Integer, Numeric, VARCHAR, ForeignKey, ARRAY, Boolean
 from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, BYTEA
-from sqlalchemy import Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import emoji
+import bcrypt
 
-from db_utils.database import base, session
+from db_utils.database import base, session as db_session
 
 
 class Category(base):
@@ -99,45 +99,19 @@ class OrderDessert(base):
 
 
 
-# class AdminUser(base):
-#     __tablename__ = 'admin_user'
-#     id = Column(Integer, primary_key=True)
-#     username = Column(String, unique=True)
-#     first_name = Column(String, unique=True)
-#     second_name = Column(String, unique=True)
-#     role = Column(String, default='user')
-#     password = Column(BYTEA, unique=True)
-#
-#
-#     def __repr__(self):
-#         return self.username
-
-roles_users = Table(
-    'roles_users',
-    base.metadata,
-    Column('user_id', ForeignKey('admin_user.id')),
-    Column('role_id', ForeignKey('role.id'))
-)
-
-
-class Role(base):
-    __tablename__ = 'role'
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
-    description = Column(String)
-    def __str__(self):
-        return self.name
-
-
 class AdminUser(base):
     __tablename__ = 'admin_user'
     id = Column(Integer, primary_key=True)
-    login = Column(String, unique=True)
-    email = Column(String, unique=True)
-    password = Column(String)
-    is_active = Column(Boolean)
-    roles = relationship('Role', secondary=roles_users,
-                            backref = 'admin_users', lazy='dynamic')
-    def __str__(self):
-        return self.email
+    username = Column(String, unique=True)
+    password = Column(String, unique=True)
 
+    def __repr__(self):
+        return f"{self.username} - {self.password}"
+
+
+# roles_users = Table(
+#     'roles_users',
+#     base.metadata,
+#     Column('user_id', ForeignKey('admin_user.id')),
+#     Column('role_id', ForeignKey('role.id'))
+# )
