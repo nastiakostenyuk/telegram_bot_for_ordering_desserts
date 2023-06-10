@@ -108,10 +108,3 @@ class AdminUser(base):
     def __repr__(self):
         return f"{self.username} - {self.password}"
 
-
-# roles_users = Table(
-#     'roles_users',
-#     base.metadata,
-#     Column('user_id', ForeignKey('admin_user.id')),
-#     Column('role_id', ForeignKey('role.id'))
-# )
