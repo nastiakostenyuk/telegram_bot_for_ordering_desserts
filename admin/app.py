@@ -94,12 +94,15 @@ def signup():
         password = request.form.get("password")
         if all([username, password]):
             password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-            new_user = AdminUser(
-                username=username, password=password_hash.decode("utf-8")
-            )
-            db_session.add(new_user)
-            db_session.commit()
-            return redirect("/login")
+            try:
+                new_user = AdminUser(
+                    username=username, password=password_hash.decode("utf-8")
+                )
+                db_session.add(new_user)
+                db_session.commit()
+                return redirect("/login")
+            except Exception as ex:
+                return render_template("security/signup.html", failed=True)
 
     return render_template("security/signup.html")
 
